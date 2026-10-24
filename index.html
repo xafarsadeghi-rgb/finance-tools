@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ابزارهای مالی</title>
+<meta name="theme-color" content="#0d0d10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ابزارهای مالی">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+  :root { color-scheme: dark; --bg:#0d0d10; --glass:rgba(255,255,255,.04); --line:rgba(255,255,255,.08); --text:#f4efe6; --muted:#8b857a; --gold:#c9a45c; --gold2:#e2c27a; --warn:#e07a5f; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; min-height:100vh; background:radial-gradient(circle at 85% 0%, #1d1a14 0%, var(--bg) 55%); background-attachment: fixed; color:var(--text); font-family: Vazirmatn, Tahoma, sans-serif; padding: 0 0 60px; }
+  .progress { position: fixed; top:0; right:0; height:2px; width:0; background:var(--gold); z-index:20; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 18px; }
+
+  /* هدر و معرفی */
+  .hero { padding: 64px 0 36px; animation: rise .9s ease both; }
+  .hero .tag { color: var(--gold); font-size: .78rem; letter-spacing: .05em; }
+  .hero h1 { font-size: 1.9rem; font-weight: 600; line-height: 1.5; margin: 10px 0 10px; }
+  .hero p { color: var(--muted); font-size: .9rem; line-height: 1.9; margin: 0; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--gold); margin-left:6px; animation: glow 2.4s ease-in-out infinite; }
+
+  /* تب‌ها */
+  .tabs { position: sticky; top: 0; z-index: 10; display:flex; gap:4px; background: rgba(13,13,16,.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border:1px solid var(--line); border-radius:14px; padding:4px; margin: 0 0 22px; }
+  .tab { flex:1; background:none; border:none; color:var(--muted); padding:9px 2px; border-radius:10px; font: inherit; font-size:.8rem; cursor:pointer; transition: background .3s ease, color .3s ease; }
+  .tab:hover { color: var(--text); }
+  .tab.on { background: var(--gold); color:#16120a; font-weight:600; }
+
+  /* کارت‌ها و فرم */
+  .panel { display:none; }
+  .panel.on { display:block; animation: rise .6s ease both; }
+  .glass { background: var(--glass); border:1px solid var(--line); border-radius:20px; padding:18px; margin-bottom:14px; }
+  .glass.reveal { opacity:0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .glass.reveal.in { opacity:1; transform:none; }
+  label { display:block; font-size:.76rem; color:var(--muted); margin: 14px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input, select { width:100%; background:transparent; border:none; border-bottom:1px solid var(--line); border-radius:0; padding:9px 0; font: inherit; font-size:1.05rem; color:var(--text); transition: border-color .3s ease; }
+  input:focus, select:focus { outline:none; border-bottom-color: var(--gold); }
+  select option { background:#16120a; color:var(--text); }
+  .ltr { direction:ltr; text-align:left; }
+  .btn { width:100%; margin-top:18px; padding:13px; border:none; border-radius:14px; background:linear-gradient(135deg, var(--gold2), #b8893b); color:#16120a; font: inherit; font-size:.95rem; font-weight:700; cursor:pointer; position:relative; overflow:hidden; transition: transform .15s ease; }
+  .btn::after { content:""; position:absolute; inset:0; background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,.4) 50%, transparent 65%); background-size: 250% 100%; animation: shimmer 3.2s 1.2s linear infinite; pointer-events:none; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: scale(.97); }
+  .btn.ghost { background: transparent; color: var(--text); border:1px solid var(--line); }
+  .btn.ghost::after { display:none; }
+  .err { color: var(--warn); font-size:.82rem; min-height:1.2em; margin-top:8px; }
+
+  /* نتیجه */
+  .out { display:none; margin-top:18px; border-top:1px solid var(--line); padding-top:16px; text-align:center; }
+  .out.show { display:block; animation: rise .6s ease both; }
+  .out small { color: var(--muted); font-size:.78rem; }
+  .big { font-size:2.1rem; font-weight:300; color: var(--gold); letter-spacing:-.02em; margin:6px 0 12px; direction:ltr; }
+  .row { display:flex; justify-content:space-between; gap:10px; font-size:.85rem; padding:9px 0; border-top:1px solid var(--line); text-align:right; }
+  .row span:first-child { color: var(--muted); }
+  .row span:last-child { direction: ltr; }
+  .row.warn span:last-child { color: var(--warn); }
+  .note { color: var(--muted); font-size:.74rem; line-height:1.8; margin-top:10px; text-align:right; }
+  .words { font-size:1.05rem; line-height:1.9; text-align:right; }
+
+  /* جدول */
+  .table-wrap { overflow-x:auto; margin-top:14px; border-radius:14px; border:1px solid var(--line); }
+  table { width:100%; border-collapse:collapse; font-size:.76rem; direction:ltr; }
+  th, td { padding:8px 9px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  th { color: var(--muted); font-weight:normal; background: rgba(255,255,255,.02); }
+  tr:last-child td { border-bottom:none; }
+
+  /* ماشین‌حساب */
+  .calc-display { font-size:2.6rem; font-weight:200; direction:ltr; text-align:left; padding:8px 4px 2px; letter-spacing:-.02em; word-break: break-all; }
+  .calc-words { min-height:1.6em; color: var(--muted); font-size:.82rem; text-align:left; direction:rtl; padding: 0 4px 10px; }
+  .keys { display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; }
+  .keys button { background:transparent; border:none; border-radius:14px; color:var(--text); padding:14px 0; font: inherit; font-size:1.05rem; cursor:pointer; transition: background .2s ease, transform .1s ease; }
+  .keys button:hover { background: rgba(255,255,255,.05); }
+  .keys button:active { transform: scale(.94); }
+  .keys button.op, .keys button.fn { color: var(--muted); }
+  .keys button.eq { background: var(--gold); color:#16120a; font-weight:700; }
+  .mult { display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:8px; }
+  .mult button { background:transparent; border:1px solid var(--line); border-radius:999px; color:var(--gold); padding:9px 0; font: inherit; font-size:.82rem; cursor:pointer; transition: background .2s ease; }
+  .mult button:hover { background: rgba(201,164,92,.08); }
+
+  .mini { font-size:.9rem; font-weight:600; color: var(--text); margin: 22px 0 10px; padding-top: 18px; border-top: 1px dashed var(--line); }
+  .q-row { display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:10px; }
+  .q-row button { background:transparent; border:1px solid var(--line); border-radius:999px; color:var(--text); padding:9px 2px; font: inherit; font-size:.8rem; cursor:pointer; transition: background .2s ease; }
+  .q-row button:hover { background: rgba(255,255,255,.04); }
+
+  .footer { text-align:center; color: var(--muted); font-size:.72rem; margin-top: 28px; line-height: 1.9; }
+
+  @keyframes rise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes glow { 0%,100% { box-shadow: 0 0 0 0 rgba(201,164,92,0); } 50% { box-shadow: 0 0 18px 2px rgba(201,164,92,.35); } }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .glass.reveal { opacity:1; transform:none; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="tag"><span class="dot"></span>ابزارهای مالی</div>
+    <h1>پول را واضح ببینید.</h1>
+    <p>قسط، سود، تسویه زودهنگام و ارزش واقعی پول با تورم، همه در یک جا. همه‌ی محاسبه‌ها در مرورگر شما انجام می‌شود و داده‌ای ذخیره یا ارسال نمی‌شود.</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-tab="loan">وام</button>
+    <button class="tab" data-tab="interest">سود</button>
+    <button class="tab" data-tab="words">حروف</button>
+    <button class="tab" data-tab="calc">ماشین‌حساب</button>
+  </nav>
+
+  <!-- وام -->
+  <section class="panel on" id="p-loan">
+    <div class="glass reveal">
+      <label for="loanAmount">مبلغ وام (ریال یا تومان)</label>
+      <input id="loanAmount" class="ltr" inputmode="numeric" placeholder="مثلاً 500000000">
+      <label for="loanRate">نرخ سود سالانه (٪)</label>
+      <input id="loanRate" class="ltr" inputmode="decimal" placeholder="مثلاً 18">
+      <label for="loanMonths">مدت بازپرداخت (ماه)</label>
+      <input id="loanMonths" class="ltr" inputmode="numeric" placeholder="مثلاً 36">
+      <label for="loanFee">کارمزد یا هزینه ثابت (اختیاری)</label>
+      <input id="loanFee" class="ltr" inputmode="numeric" placeholder="مثلاً 5000000">
+      <label for="loanIncome">درآمد ماهانه شما (اختیاری)</label>
+      <input id="loanIncome" class="ltr" inputmode="numeric" placeholder="مثلاً 40000000">
+      <label for="loanInflation">تورم سالانه پیش‌بینی‌شده (٪، اختیاری)</label>
+      <input id="loanInflation" class="ltr" inputmode="decimal" placeholder="مثلاً 35">
+      <button class="btn" id="loanBtn">محاسبه</button>
+      <div class="err" id="loanErr"></div>
+      <div class="out" id="loanOut"></div>
+      <button class="btn ghost" id="scheduleBtn" style="display:none"></button>
+    </div>
+
+    <div class="glass reveal" id="scheduleCard" style="display:none">
+      <div style="font-size:.9rem;font-weight:600;margin-bottom:4px">جدول اقساط</div>
+      <div id="scheduleOut"></div>
+    </div>
+
+    <div class="glass reveal">
+      <div style="font-size:.9rem;font-weight:600;margin-bottom:4px">تسویه زودهنگام</div>
+      <label for="prepayMonth">تسویه در ماه (اختیاری)</label>
+      <input id="prepayMonth" class="ltr" inputmode="numeric" placeholder="مثلاً 18">
+      <button class="btn" id="prepayBtn">محاسبه صرفه‌جویی</button>
+      <div class="err" id="prepayErr"></div>
+      <div class="out" id="prepayOut"></div>
+    </div>
+  </section>
+
+  <!-- سود -->
+  <section class="panel" id="p-interest">
+    <div class="glass reveal">
+      <label for="principal">اصل مبلغ</label>
+      <input id="principal" class="ltr" inputmode="numeric" placeholder="مثلاً 10000000">
+      <label for="intRate">نرخ سود سالانه (٪)</label>
+      <input id="intRate" class="ltr" inputmode="decimal" placeholder="مثلاً 20">
+      <label for="years">مدت (سال)</label>
+      <input id="years" class="ltr" inputmode="decimal" placeholder="مثلاً 2">
+      <label for="compound">نوع سود</label>
+      <select id="compound">
+        <option value="simple">ساده</option>
+        <option value="monthly">مرکب ماهانه</option>
+        <option value="yearly">مرکب سالانه</option>
+      </select>
+      <button class="btn" id="intBtn">محاسبه</button>
+      <div class="err" id="intErr"></div>
+      <div class="out" id="intOut"></div>
+    </div>
+  </section>
+
+  <!-- عدد به حروف -->
+  <section class="panel" id="p-words">
+    <div class="glass reveal">
+      <label for="numInput">عدد مورد نظر</label>
+      <input id="numInput" class="ltr" inputmode="numeric" placeholder="مثلاً 1250000">
+      <div class="err" id="wordsErr"></div>
+      <div class="out show" style="text-align:right; border-top:none; padding-top:12px">
+        <div class="words" id="wordsText">—</div>
+      </div>
+      <div class="note">تا ۹۹۹ تریلیون پشتیبانی می‌شود. ارقام فارسی هم قبول است.</div>
+    </div>
+  </section>
+
+  <!-- ماشین‌حساب -->
+  <section class="panel" id="p-calc">
+    <div class="glass reveal">
+      <div class="calc-display" id="calcDisplay">0</div>
+      <div class="calc-words" id="calcWords"></div>
+      <div class="keys">
+        <button class="fn" data-k="C">C</button>
+        <button class="fn" data-k="⌫">⌫</button>
+        <button class="fn" data-k="%">%</button>
+        <button class="op" data-k="/">÷</button>
+        <button data-k="7">7</button>
+        <button data-k="8">8</button>
+        <button data-k="9">9</button>
+        <button class="op" data-k="*">×</button>
+        <button data-k="4">4</button>
+        <button data-k="5">5</button>
+        <button data-k="6">6</button>
+        <button class="op" data-k="-">−</button>
+        <button data-k="1">1</button>
+        <button data-k="2">2</button>
+        <button data-k="3">3</button>
+        <button class="op" data-k="+">+</button>
+        <button data-k="0">0</button>
+        <button class="fn" data-k="000">000</button>
+        <button data-k=".">.</button>
+        <button class="eq" data-k="=">=</button>
+      </div>
+      <div class="mult">
+        <button data-k="k">هزار</button>
+        <button data-k="m">میلیون</button>
+        <button data-k="b">میلیارد</button>
+      </div>
+
+      <div class="mini">میانبرهای مالی</div>
+      <label for="qBase">عدد پایه</label>
+      <input id="qBase" class="ltr" inputmode="decimal" placeholder="مثلاً 2000000">
+      <label for="qPct">درصد</label>
+      <input id="qPct" class="ltr" inputmode="decimal" placeholder="مثلاً 9">
+      <div class="q-row">
+        <button data-q="of">درصدی از عدد</button>
+        <button data-q="up">افزایش</button>
+        <button data-q="down">کاهش</button>
+      </div>
+      <div class="out" id="qOut"></div>
+    </div>
+  </section>
+
+  <div class="footer">همه‌ی محاسبه‌ها تقریبی هستند. قبل از تصمیم مالی، شرایط دقیق را از بانک یا مؤسسه بپرسید.</div>
+</div>
+
+<script>
+  (function () {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // ---- ابزارهای عمومی ----
+    function normalize(text) {
+      return text
+        .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0))
+        .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+        .replace(/[,\s٬]/g, "")
+        .replace(/٫/g, ".");
+    }
+    function formatNumber(n) {
+      return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    function parseNumber(id) {
+      const raw = normalize(document.getElementById(id).value);
+      return raw === "" ? NaN : Number(raw);
+    }
+    function showError(id, msg) { document.getElementById(id).textContent = msg; }
+    function setOutput(id, html) {
+      const el = document.getElementById(id);
+      el.innerHTML = html;
+      el.classList.add("show");
+      el.querySelectorAll(".count").forEach(c => countTo(c, Number(c.dataset.to)));
+    }
+    function row(label, value, warn) {
+      return `<div class="row${warn ? " warn" : ""}"><span>${label}</span><span>${value}</span></div>`;
+    }
+    function countTo(el, to) {
+      if (reduce) { el.textContent = formatNumber(to); return; }
+      const start = performance.now();
+      const dur = 900;
+      (function frame(now) {
+        const t = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = formatNumber(to * eased);
+        if (t < 1) requestAnimationFrame(frame);
+      })(start);
+    }
+    function attachCommaInput(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        const raw = normalize(el.value).replace(/[^\d.]/g, "");
+        const parts = raw.split(".");
+        const intPart = parts[0];
+        const decPart = parts.length > 1 ? "." + parts.slice(1).join("").slice(0, 4) : "";
+        el.value = (intPart ? formatNumber(Number(intPart)) : "") + decPart;
+      });
+    }
+    ["loanAmount", "loanFee", "loanIncome", "principal", "qBase"].forEach(attachCommaInput);
+
+    // ---- وام ----
+    function loanMath(P, annual, n) {
+      const r = annual / 100 / 12;
+      return r === 0 ? P / n : (P * r) / (1 - Math.pow(1 + r, -n));
+    }
+
+    let lastLoan = null;
+    document.getElementById("loanBtn").addEventListener("click", () => {
+      showError("loanErr", "");
+      const P = parseNumber("loanAmount");
+      const annual = parseNumber("loanRate");
+      const n = parseNumber("loanMonths");
+      if (!(P > 0)) return showError("loanErr", "مبلغ وام را درست وارد کنید.");
+      if (!(annual >= 0)) return showError("loanErr", "نرخ سود نمی‌تواند منفی باشد.");
+      if (!(Number.isInteger(n) && n > 0)) return showError("loanErr", "مدت بازپرداخت باید عدد صحیح ماه باشد.");
+
+      const fee = parseNumber("loanFee") || 0;
+      const payment = loanMath(P, annual, n);
+      const interest = payment * n - P;
+      const total = payment * n + fee;
+      lastLoan = { P, annual, n, payment, fee };
+
+      let extra = "";
+      const income = parseNumber("loanIncome");
+      if (income > 0) {
+        const share = ((payment + fee / n) / income) * 100;
+        extra += row("سهم قسط از درآمد ماهانه", share.toFixed(1) + "٪" + (share > 40 ? " (سنگین)" : ""), share > 40);
+      }
+      const inflation = parseNumber("loanInflation");
+      if (isFinite(inflation) && inflation >= 0) {
+        const mi = Math.pow(1 + inflation / 100, 1 / 12) - 1;
+        let real = fee;
+        for (let m = 1; m <= n; m++) real += payment / Math.pow(1 + mi, m);
+        extra += row("ارزش امروزی کل پرداخت (با تورم)", formatNumber(real));
+      }
+
+      setOutput("loanOut",
+        `<small>قسط ماهانه تقریبی</small>
+         <div class="big"><span class="count" data-to="${payment}">0</span></div>
+         ${row("اصل وام", formatNumber(P))}
+         ${row("مجموع سود پرداختی", formatNumber(interest))}
+         ${row("کارمزد", formatNumber(fee))}
+         ${row("مجموع بازپرداخت", formatNumber(total))}
+         ${extra}
+         <div class="note">محاسبه بر اساس قسط ثابت است. شرایط واقعی بانک ممکن است تفاوت داشته باشد.</div>`
+      );
+      const sc = document.getElementById("scheduleCard");
+      sc.style.display = "block";
+      sc.classList.add("in");
+      renderSchedule();
+    });
+
+    function renderSchedule() {
+      const box = document.getElementById("scheduleOut");
+      if (!lastLoan) return;
+      const { P, annual, n, payment, fee } = lastLoan;
+      const r = annual / 100 / 12;
+      let balance = P;
+      let rows = "";
+      for (let m = 1; m <= n; m++) {
+        const interestPart = balance * r;
+        const principalPart = payment - interestPart;
+        balance = Math.max(0, balance - principalPart);
+        rows += `<tr><td>${m}</td><td>${formatNumber(payment)}</td><td>${formatNumber(fee / n)}</td><td>${formatNumber(principalPart)}</td><td>${formatNumber(interestPart)}</td><td>${formatNumber(balance)}</td></tr>`;
+      }
+      box.innerHTML = `<div class="table-wrap"><table><thead><tr><th>ماه</th><th>قسط</th><th>کارمزد</th><th>اصل</th><th>سود</th><th>مانده</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }
+
+    document.getElementById("prepayBtn").addEventListener("click", () => {
+      showError("prepayErr", "");
+      const P = parseNumber("loanAmount");
+      const annual = parseNumber("loanRate");
+      const n = parseNumber("loanMonths");
+      const k = parseNumber("prepayMonth");
+      if (!(P > 0) || !(annual >= 0) || !(Number.isInteger(n) && n > 0)) {
+        return showError("prepayErr", "ابتدا مبلغ، نرخ و مدت وام را وارد کنید.");
+      }
+      if (!(Number.isInteger(k) && k >= 1 && k < n)) {
+        return showError("prepayErr", `ماه تسویه باید عددی بین ۱ و ${n - 1} باشد.`);
+      }
+      const payment = loanMath(P, annual, n);
+      const r = annual / 100 / 12;
+      let balance = P;
+      for (let m = 1; m <= k; m++) balance = Math.max(0, balance - (payment - balance * r));
+      const originalInterest = payment * n - P;
+      const newInterest = payment * k + balance - P;
+      const saved = originalInterest - newInterest;
+      const percent = originalInterest > 0 ? (saved / originalInterest) * 100 : 0;
+      setOutput("prepayOut",
+        `<small>مبلغ تسویه در ماه ${k}</small>
+         <div class="big"><span class="count" data-to="${balance}">0</span></div>
+         ${row("سود بدون تسویه", formatNumber(originalInterest))}
+         ${row("سود با تسویه در ماه " + k, formatNumber(newInterest))}
+         ${row("سود حذف‌شده", formatNumber(saved) + " (" + percent.toFixed(1) + "٪)")}
+         <div class="note">کارمزد یا جریمه‌ی تسویه زودهنگام در این محاسبه لحاظ نشده است.</div>`
+      );
+    });
+
+    // ---- سود ----
+    document.getElementById("intBtn").addEventListener("click", () => {
+      showError("intErr", "");
+      const P = parseNumber("principal");
+      const rate = parseNumber("intRate") / 100;
+      const years = parseNumber("years");
+      const type = document.getElementById("compound").value;
+      if (!(P > 0)) return showError("intErr", "اصل مبلغ را درست وارد کنید.");
+      if (!(rate >= 0)) return showError("intErr", "نرخ سود نمی‌تواند منفی باشد.");
+      if (!(years > 0)) return showError("intErr", "مدت را به سال وارد کنید.");
+      let finalAmount, label;
+      if (type === "simple") { finalAmount = P * (1 + rate * years); label = "سود ساده"; }
+      else if (type === "monthly") { finalAmount = P * Math.pow(1 + rate / 12, 12 * years); label = "سود مرکب ماهانه"; }
+      else { finalAmount = P * Math.pow(1 + rate, years); label = "سود مرکب سالانه"; }
+      const profit = finalAmount - P;
+      setOutput("intOut",
+        `<small>${label}</small>
+         <div class="big"><span class="count" data-to="${profit}">0</span></div>
+         ${row("اصل مبلغ", formatNumber(P))}
+         ${row("مبلغ نهایی", formatNumber(finalAmount))}
+         ${row("مدت", years + " سال")}`
+      );
+    });
+
+    // ---- عدد به حروف ----
+    const UNITS = ["", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"];
+    const TEENS = ["ده", "یازده", "دوازده", "سیزده", "چهارده", "پانزده", "شانزده", "هفده", "هجده", "نوزده"];
+    const TENS = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
+    const HUNDREDS = ["", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"];
+    const SCALES = ["", "هزار", "میلیون", "میلیارد", "تریلیون"];
+
+    function groupToWords(n) {
+      const parts = [];
+      const h = Math.floor(n / 100), rest = n % 100;
+      if (h) parts.push(HUNDREDS[h]);
+      if (rest) {
+        if (rest < 10) parts.push(UNITS[rest]);
+        else if (rest < 20) parts.push(TEENS[rest - 10]);
+        else { parts.push(TENS[Math.floor(rest / 10)]); if (rest % 10) parts.push(UNITS[rest % 10]); }
+      }
+      return parts.join(" و ");
+    }
+    function numberToWords(value) {
+      const negative = value < 0;
+      const digits = String(Math.abs(value));
+      if (digits === "0") return "صفر";
+      const groups = [];
+      for (let i = digits.length; i > 0; i -= 3) groups.unshift(Number(digits.slice(Math.max(0, i - 3), i)));
+      const words = [];
+      groups.forEach((g, idx) => {
+        if (g === 0) return;
+        const si = groups.length - idx - 1;
+        const text = groupToWords(g);
+        if (si === 0) words.push(text);
+        else if (si === 1 && g === 1) words.push(SCALES[1]);
+        else words.push(text + " " + SCALES[si]);
+      });
+      return (negative ? "منفی " : "") + words.join(" و ");
+    }
+
+    const numInput = document.getElementById("numInput");
+    numInput.addEventListener("input", () => {
+      const cleaned = normalize(numInput.value).replace(/\D/g, "");
+      numInput.value = cleaned ? formatNumber(Number(cleaned)) : "";
+      showError("wordsErr", "");
+      const wt = document.getElementById("wordsText");
+      if (!cleaned) { wt.textContent = "—"; return; }
+      if (cleaned.length > 15) { showError("wordsErr", "عدد خیلی بزرگ است. تا ۹۹۹ تریلیون پشتیبانی می‌شود."); wt.textContent = "—"; return; }
+      wt.textContent = numberToWords(Number(cleaned));
+    });
+
+    // ---- ماشین‌حساب ----
+    const calc = { display: "0", acc: null, op: null, fresh: true };
+    const calcDisplay = document.getElementById("calcDisplay");
+    const calcWords = document.getElementById("calcWords");
+
+    function fmtCalc(x) {
+      if (!isFinite(x)) return "خطا";
+      return String(Math.round(x * 1e10) / 1e10);
+    }
+    function prettyCalc(str) {
+      if (str === "خطا") return str;
+      const neg = str.startsWith("-");
+      const body = neg ? str.slice(1) : str;
+      const [intPart, decPart] = body.split(".");
+      const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return (neg ? "-" : "") + grouped + (decPart !== undefined ? "." + decPart : "");
+    }
+    function applyOp(a, b, op) {
+      if (op === "+") return a + b;
+      if (op === "-") return a - b;
+      if (op === "*") return a * b;
+      if (op === "/") return b === 0 ? NaN : a / b;
+      return b;
+    }
+    function updateCalcWords() {
+      const text = calc.display;
+      const v = Number(text);
+      if (text === "خطا" || text.includes(".") || !isFinite(v) || v === 0 || Math.abs(v) >= 1e15) {
+        calcWords.textContent = "";
+        return;
+      }
+      calcWords.textContent = numberToWords(Math.trunc(v));
+    }
+    function calcInput(k) {
+      const s = calc;
+      if (s.display === "خطا" && k !== "C") return;
+      if (/^\d$/.test(k)) {
+        s.display = (s.fresh || s.display === "0") ? k : s.display + k;
+        s.fresh = false;
+      } else if (k === ".") {
+        if (s.fresh) { s.display = "0."; s.fresh = false; }
+        else if (!s.display.includes(".")) s.display += ".";
+      } else if (k === "000") {
+        const base = s.fresh ? "0" : s.display;
+        s.display = base === "0" ? "0" : base + "000";
+        s.fresh = false;
+      } else if (k === "k" || k === "m" || k === "b") {
+        const mult = k === "k" ? 1e3 : k === "m" ? 1e6 : 1e9;
+        s.display = fmtCalc(Number(s.display) * mult);
+        s.fresh = false;
+      } else if (k === "C") {
+        s.display = "0"; s.acc = null; s.op = null; s.fresh = true;
+      } else if (k === "⌫") {
+        s.display = s.display.length > 1 ? s.display.slice(0, -1) : "0";
+      } else if (k === "%") {
+        s.display = fmtCalc(Number(s.display) / 100);
+      } else if (["+", "-", "*", "/"].includes(k)) {
+        const cur = Number(s.display);
+        if (s.acc !== null && s.op && !s.fresh) {
+          s.acc = applyOp(s.acc, cur, s.op);
+          s.display = fmtCalc(s.acc);
+        } else {
+          s.acc = cur;
+        }
+        s.op = k;
+        s.fresh = true;
+      } else if (k === "=") {
+        if (s.op && s.acc !== null) {
+          s.display = fmtCalc(applyOp(s.acc, Number(s.display), s.op));
+          s.acc = null; s.op = null; s.fresh = true;
+        }
+      }
+      calcDisplay.textContent = prettyCalc(s.display);
+      updateCalcWords();
+    }
+    document.querySelectorAll("[data-k]").forEach(btn => {
+      btn.addEventListener("click", () => calcInput(btn.dataset.k));
+    });
+
+    // ---- میانبرهای مالی ----
+    document.querySelectorAll("[data-q]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const base = parseNumber("qBase");
+        const pct = parseNumber("qPct");
+        if (!isFinite(base) || !isFinite(pct)) {
+          return setOutput("qOut", '<div class="err">عدد پایه و درصد را وارد کنید.</div>');
+        }
+        const amount = base * pct / 100;
+        let html;
+        if (btn.dataset.q === "of") {
+          html = `<small>${pct}٪ از ${formatNumber(base)}</small><div class="big"><span class="count" data-to="${amount}">0</span></div>`;
+        } else if (btn.dataset.q === "up") {
+          html = `<small>بعد از افزایش ${pct}٪</small><div class="big"><span class="count" data-to="${base + amount}">0</span></div>` + row("مقدار افزایش", formatNumber(amount));
+        } else {
+          html = `<small>بعد از کاهش ${pct}٪</small><div class="big"><span class="count" data-to="${base - amount}">0</span></div>` + row("مقدار کاهش", formatNumber(amount));
+        }
+        setOutput("qOut", html);
+      });
+    });
+
+    // ---- تب‌ها ----
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+        tab.classList.add("on");
+        document.querySelectorAll(".panel").forEach(p => p.classList.remove("on"));
+        document.getElementById("p-" + tab.dataset.tab).classList.add("on");
+        revealPanel(document.getElementById("p-" + tab.dataset.tab));
+      });
+    });
+
+    // ---- انیمیشن اسکرول ----
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    function revealPanel(panel) {
+      panel.querySelectorAll(".reveal").forEach(el => {
+        el.classList.remove("in");
+        io.observe(el);
+      });
+    }
+    revealPanel(document.getElementById("p-loan"));
+
+    window.addEventListener("scroll", () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      document.getElementById("progress").style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+    }, { passive: true });
+  })();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+</script>
+</body>
+</html>
